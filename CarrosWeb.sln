@@ -1,25 +1,109 @@
-﻿
-Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.10.34916.146
-MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CarrosWeb", "CarrosWeb\CarrosWeb.csproj", "{BEF54E77-018E-425F-B9E7-AE9935EE548A}"
-EndProject
-Global
-	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug|Any CPU = Debug|Any CPU
-		Release|Any CPU = Release|Any CPU
-	EndGlobalSection
-	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{BEF54E77-018E-425F-B9E7-AE9935EE548A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{BEF54E77-018E-425F-B9E7-AE9935EE548A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{BEF54E77-018E-425F-B9E7-AE9935EE548A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{BEF54E77-018E-425F-B9E7-AE9935EE548A}.Release|Any CPU.Build.0 = Release|Any CPU
-	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {1478125B-84A8-4E1F-AE82-FB1F93881C9D}
-	EndGlobalSection
-EndGlobal
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Lista de Compras</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        li {
+            margin: 8px 0;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .checked {
+            text-decoration: line-through;
+            color: gray;
+        }
+
+        button {
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>🛒 Minha Lista de Compras</h1>
+
+    <input type="text" id="itemInput" placeholder="Digite o item...">
+    <button onclick="adicionarItem()">Adicionar</button>
+
+    <ul id="listaCompras"></ul>
+    <script src="~/Compras/Lista.js"></script>
+
+</body>
+</html>
+
+
+let lista = JSON.parse(localStorage.getItem('compras')) || [];
+
+function salvarLista() {
+    localStorage.setItem('compras', JSON.stringify(lista));
+}
+
+function renderizarLista() {
+    const ul = document.getElementById("listaCompras");
+    ul.innerHTML = "";
+
+    lista.forEach((item, index) => {
+        const li = document.createElement("li");
+
+        const span = document.createElement("span");
+        span.textContent = item.nome;
+        span.className = item.pego ? "checked" : "";
+        span.onclick = () => {
+            lista[index].pego = !lista[index].pego;
+            salvarLista();
+            renderizarLista();
+        };
+        li.appendChild(span);
+
+        const editarBtn = document.createElement("button");
+        editarBtn.textContent = "✏️ Editar";
+        editarBtn.onclick = () => {
+            const novoNome = prompt("Editar item:", item.nome);
+            if (novoNome) {
+                lista[index].nome = novoNome;
+                salvarLista();
+                renderizarLista();
+            }
+        };
+        li.appendChild(editarBtn);
+
+        const removerBtn = document.createElement("button");
+        removerBtn.textContent = "❌ Remover";
+        removerBtn.onclick = () => {
+            lista.splice(index, 1);
+            salvarLista();
+            renderizarLista();
+        };
+        li.appendChild(removerBtn);
+
+        ul.appendChild(li);
+    });
+}
+
+function adicionarItem() {
+    const input = document.getElementById("itemInput");
+    const nome = input.value.trim();
+    if (nome) {
+        lista.push({ nome, pego: false });
+        input.value = "";
+        salvarLista();
+        renderizarLista();
+    } else {
+        alert("Digite um item para adicionar.");
+    }
+}
+
+renderizarLista();
